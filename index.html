@@ -2,49 +2,74 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stranger Eggs App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Stranger Eggs Game</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
-            font-family: sans-serif;
-            background-color: var(--tg-theme-bg-color, #ffffff);
-            color: var(--tg-theme-text-color, #000000);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(circle, #2c3e50, #000000);
+            color: white;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100vh;
             margin: 0;
+            overflow: hidden;
+            touch-action: manipulation;
         }
-        .container { text-align: center; padding: 20px; }
-        button {
-            background-color: var(--tg-theme-button-color, #248bed);
-            color: var(--tg-theme-button-text-color, #ffffff);
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-size: 16px;
+        #score { font-size: 32px; margin-bottom: 20px; font-weight: bold; color: #f1c40f; }
+        #egg {
+            font-size: 100px;
             cursor: pointer;
-            margin-top: 20px;
+            transition: transform 0.1s;
+            user-select: none;
         }
+        #egg:active { transform: scale(0.9); }
+        .message { margin-top: 20px; font-size: 18px; opacity: 0.8; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Вітаю у @strangereggs_bot! 🥚</h1>
-        <p>Цей додаток тепер адаптується під тему вашого Telegram.</p>
-        <button onclick="closeApp()">Закрити додаток</button>
-    </div>
+
+    <div id="score">0</div>
+    <div id="egg">🥚</div>
+    <div class="message">Натискай на яйце!</div>
 
     <script>
-        // Ініціалізація Telegram Mini App
         const tg = window.Telegram.WebApp;
-        tg.expand(); // Розгорнути на весь екран
+        tg.ready();
+        tg.expand();
 
-        function closeApp() {
-            tg.close(); // Функція для закриття додатка
-        }
+        let count = 0;
+        const scoreDisplay = document.getElementById('score');
+        const eggElement = document.getElementById('egg');
+
+        // Налаштування головної кнопки Telegram для виходу/збереження
+        tg.MainButton.text = "ЗБЕРЕГТИ РЕЗУЛЬТАТ";
+        tg.MainButton.hide(); 
+
+        eggElement.addEventListener('click', () => {
+            count++;
+            scoreDisplay.innerText = count;
+
+            // Ефект "вибуху" або зміни смайлика на певному етапі
+            if (count === 50) {
+                eggElement.innerText = "🐣";
+                tg.showAlert("Ого! Курча вилупилося!");
+                tg.MainButton.show(); // Показуємо кнопку збереження, коли є успіх
+            }
+            
+            // Вібрація при кліку (тільки на мобільних пристроях)
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('medium');
+            }
+        });
+
+        // Обробка натискання на головну кнопку
+        tg.onEvent('mainButtonClicked', function(){
+            tg.sendData(`Мій результат: ${count}`);
+        });
     </script>
 </body>
 </html>
