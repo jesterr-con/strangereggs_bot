@@ -1,76 +1,97 @@
 import React, { useState, useEffect } from 'react';
 
-const KinderTapper = () => {
-  const [points, setPoints] = useState(0); // Загальний баланс (шоколад)
-  const [eggHealth, setEggHealth] = useState(100); // Стійкість яйця
-  const [collection, setCollection] = useState([]); // Зібрані іграшки
-  const [isCracking, setIsCracking] = useState(false);
+const StrangerTapper = () => {
+  const [energy, setEnergy] = useState(0); // Очки (Енергія вивороту)
+  const [eggHP, setEggHP] = useState(100); // Здоров'я яйця
+  const [savedSouls, setSavedSouls] = useState([]); // Колекція персонажів/артефактів
+  const [isVibrating, setIsVibrating] = useState(false);
 
-  const toys = ["🦁", "🦖", "🚗", "🧸", "🤖", "🦄", "🚁"];
+  // Список "іграшок" зі світу Stranger Things
+  const upsideDownLoot = [
+    { icon: "🧇", name: "Eggo" },
+    { icon: "📻", name: "Walkie-Talkie" },
+    { icon: "🚲", name: "Mike's Bike" },
+    { icon: "🎸", name: "Eddie's Guitar" },
+    { icon: "👧🏻", name: "Eleven" },
+    { icon: "🧢", name: "Dustin" }
+  ];
 
   const handleTap = (e) => {
-    if (eggHealth > 0) {
-      setEggHealth(prev => prev - 10); // Віднімаємо життя яйця
-      setPoints(prev => prev + 1); // Даємо трохи шоколаду за кожен тап
-      setIsCracking(true);
-      setTimeout(() => setIsCracking(false), 100);
+    if (eggHP > 0) {
+      setEggHP(prev => prev - 5);
+      setEnergy(prev => prev + 11); // 11 — магічне число ;)
+      setIsVibrating(true);
+      setTimeout(() => setIsVibrating(false), 50);
     } else {
-      // Яйце розбилося!
-      const randomToy = toys[Math.floor(Math.random() * toys.length)];
-      setCollection([...collection, randomToy]);
-      setPoints(prev => prev + 50); // Бонус за відкриття
-      setEggHealth(100); // Нове яйце
+      // Яйце розривається, виходить артефакт
+      const loot = upsideDownLoot[Math.floor(Math.random() * upsideDownLoot.length)];
+      setSavedSouls([...savedSouls, loot]);
+      setEggHP(100); // Повертається нове яйце
+      setEnergy(prev => prev + 500);
     }
   };
 
   return (
-    <div className="flex flex-col items-center min-h-screen bg-blue-50 text-slate-800 p-6 font-sans">
-      {/* Шапка з балансом */}
-      <div className="w-full flex justify-between items-center bg-white p-4 rounded-2xl shadow-md mb-8">
-        <div className="flex flex-col">
-          <span className="text-sm text-gray-500 uppercase font-bold">Шоколад</span>
-          <span className="text-2xl font-black text-orange-500">{points} 🍫</span>
-        </div>
-        <div className="text-right">
-          <span className="text-sm text-gray-500 uppercase font-bold">Колекція</span>
-          <div className="text-xl">{collection.length} / 50</div>
+    <div className="flex flex-col items-center min-h-screen bg-[#050505] text-[#ff0000] p-6 font-mono overflow-hidden">
+      {/* Header: Стиль Неону */}
+      <div className="w-full text-center mb-10">
+        <h1 className="text-4xl font-black tracking-widest uppercase shadow-red-500 drop-shadow-[0_0_10px_rgba(255,0,0,0.8)]">
+          Stranger Kinders
+        </h1>
+        <div className="mt-4 text-2xl font-bold text-white">
+          {energy.toLocaleString()} <span className="text-red-600">⚡</span>
         </div>
       </div>
 
-      {/* Основна область з Кіндером */}
+      {/* Головне Яйце */}
       <div className="relative flex flex-col items-center">
+        {/* Частинки "Попелу" (Upside Down vibe) */}
+        <div className="absolute inset-0 pointer-events-none animate-pulse">
+          <div className="w-full h-full bg-[url('https://www.transparenttextures.com/patterns/dust.png')] opacity-20"></div>
+        </div>
+
         <div 
           onClick={handleTap}
-          className={`relative w-64 h-80 transition-transform cursor-pointer
-            ${isCracking ? 'scale-95' : 'scale-100'} 
-            ${eggHealth < 50 ? 'animate-pulse' : ''}`}
+          className={`relative w-64 h-80 transition-all duration-75 cursor-pointer
+            ${isVibrating ? 'scale-110 rotate-1' : 'scale-100'}
+          `}
         >
-          {/* Візуалізація яйця (можна замінити на SVG або картинку) */}
-          <div className="w-full h-full bg-gradient-to-b from-white via-white to-orange-500 rounded-[50%_50%_50%_50%_/_60%_60%_40%_40%] shadow-xl border-4 border-white flex items-center justify-center overflow-hidden">
-             <span className="text-6xl select-none">🥚</span>
-             {/* Візуальні тріщини при низькому здоров'ї */}
-             {eggHealth < 50 && <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cracked-glass.png')] opacity-30"></div>}
+          {/* Тіло Яйця: Темно-червоне з лозами */}
+          <div className="w-full h-full bg-gradient-to-b from-[#1a0000] via-[#4d0000] to-black rounded-[50%_50%_50%_50%_/_65%_65%_35%_35%] shadow-[0_0_40px_rgba(255,0,0,0.4)] border-2 border-[#ff0000] flex items-center justify-center relative overflow-hidden">
+             <span className="text-8xl filter grayscale brightness-50 contrast-125">🥚</span>
+             
+             {/* Анімовані лози (смужки) */}
+             <div className="absolute inset-0 opacity-40 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,#ff0000_10px,#ff0000_11px)]"></div>
           </div>
         </div>
 
-        {/* Шкала розбиття */}
-        <div className="mt-8 w-64">
-          <p className="text-center text-xs font-bold mb-1 uppercase text-gray-400">Міцність шкаралупи</p>
-          <div className="w-full bg-gray-200 h-4 rounded-full border-2 border-white shadow-inner">
+        {/* HP Bar: Виглядає як датчик з 80-х */}
+        <div className="mt-10 w-72">
+          <div className="flex justify-between text-[10px] mb-1 font-bold tracking-tighter uppercase">
+            <span>Void Stability</span>
+            <span>{eggHP}%</span>
+          </div>
+          <div className="w-full bg-gray-900 h-3 rounded-none border border-red-900 overflow-hidden">
             <div 
-              className="bg-orange-400 h-full transition-all duration-200" 
-              style={{ width: `${eggHealth}%` }}
+              className="bg-red-600 h-full shadow-[0_0_10px_#ff0000]" 
+              style={{ width: `${eggHP}%` }}
             ></div>
           </div>
         </div>
       </div>
 
-      {/* Останні знайдені іграшки */}
-      <div className="mt-auto w-full max-w-sm">
-        <h3 className="font-bold mb-2">Твоя полиця:</h3>
-        <div className="flex gap-2 overflow-x-auto p-2 bg-white rounded-xl shadow-inner min-h-[50px]">
-          {collection.map((toy, index) => (
-            <span key={index} className="text-3xl bg-gray-100 rounded-lg p-1">{toy}</span>
+      {/* Колекція Врятованих */}
+      <div className="mt-auto w-full max-w-md">
+        <h3 className="text-xs font-bold mb-3 border-b border-red-900 pb-1 text-gray-500 uppercase tracking-widest">
+          Found in the Void:
+        </h3>
+        <div className="flex gap-4 overflow-x-auto p-4 bg-black border border-red-900/30 rounded-lg shadow-inner">
+          {savedSouls.length === 0 && <span className="text-gray-700 text-xs italic">Nothing yet...</span>}
+          {savedSouls.map((item, index) => (
+            <div key={index} className="flex flex-col items-center min-w-[60px] animate-bounce">
+              <span className="text-4xl">{item.icon}</span>
+              <span className="text-[8px] mt-1 text-white uppercase">{item.name}</span>
+            </div>
           ))}
         </div>
       </div>
@@ -78,4 +99,4 @@ const KinderTapper = () => {
   );
 };
 
-export default KinderTapper;
+export default StrangerTapper;
