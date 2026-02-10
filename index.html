@@ -1,75 +1,81 @@
-<!DOCTYPE html>
-<html lang="uk">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Stranger Eggs Game</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: radial-gradient(circle, #2c3e50, #000000);
-            color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            overflow: hidden;
-            touch-action: manipulation;
-        }
-        #score { font-size: 32px; margin-bottom: 20px; font-weight: bold; color: #f1c40f; }
-        #egg {
-            font-size: 100px;
-            cursor: pointer;
-            transition: transform 0.1s;
-            user-select: none;
-        }
-        #egg:active { transform: scale(0.9); }
-        .message { margin-top: 20px; font-size: 18px; opacity: 0.8; }
-    </style>
-</head>
-<body>
+import React, { useState, useEffect } from 'react';
 
-    <div id="score">0</div>
-    <div id="egg">🥚</div>
-    <div class="message">Натискай на яйце!</div>
+const KinderTapper = () => {
+  const [points, setPoints] = useState(0); // Загальний баланс (шоколад)
+  const [eggHealth, setEggHealth] = useState(100); // Стійкість яйця
+  const [collection, setCollection] = useState([]); // Зібрані іграшки
+  const [isCracking, setIsCracking] = useState(false);
 
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
+  const toys = ["🦁", "🦖", "🚗", "🧸", "🤖", "🦄", "🚁"];
 
-        let count = 0;
-        const scoreDisplay = document.getElementById('score');
-        const eggElement = document.getElementById('egg');
+  const handleTap = (e) => {
+    if (eggHealth > 0) {
+      setEggHealth(prev => prev - 10); // Віднімаємо життя яйця
+      setPoints(prev => prev + 1); // Даємо трохи шоколаду за кожен тап
+      setIsCracking(true);
+      setTimeout(() => setIsCracking(false), 100);
+    } else {
+      // Яйце розбилося!
+      const randomToy = toys[Math.floor(Math.random() * toys.length)];
+      setCollection([...collection, randomToy]);
+      setPoints(prev => prev + 50); // Бонус за відкриття
+      setEggHealth(100); // Нове яйце
+    }
+  };
 
-        // Налаштування головної кнопки Telegram для виходу/збереження
-        tg.MainButton.text = "ЗБЕРЕГТИ РЕЗУЛЬТАТ";
-        tg.MainButton.hide(); 
+  return (
+    <div className="flex flex-col items-center min-h-screen bg-blue-50 text-slate-800 p-6 font-sans">
+      {/* Шапка з балансом */}
+      <div className="w-full flex justify-between items-center bg-white p-4 rounded-2xl shadow-md mb-8">
+        <div className="flex flex-col">
+          <span className="text-sm text-gray-500 uppercase font-bold">Шоколад</span>
+          <span className="text-2xl font-black text-orange-500">{points} 🍫</span>
+        </div>
+        <div className="text-right">
+          <span className="text-sm text-gray-500 uppercase font-bold">Колекція</span>
+          <div className="text-xl">{collection.length} / 50</div>
+        </div>
+      </div>
 
-        eggElement.addEventListener('click', () => {
-            count++;
-            scoreDisplay.innerText = count;
+      {/* Основна область з Кіндером */}
+      <div className="relative flex flex-col items-center">
+        <div 
+          onClick={handleTap}
+          className={`relative w-64 h-80 transition-transform cursor-pointer
+            ${isCracking ? 'scale-95' : 'scale-100'} 
+            ${eggHealth < 50 ? 'animate-pulse' : ''}`}
+        >
+          {/* Візуалізація яйця (можна замінити на SVG або картинку) */}
+          <div className="w-full h-full bg-gradient-to-b from-white via-white to-orange-500 rounded-[50%_50%_50%_50%_/_60%_60%_40%_40%] shadow-xl border-4 border-white flex items-center justify-center overflow-hidden">
+             <span className="text-6xl select-none">🥚</span>
+             {/* Візуальні тріщини при низькому здоров'ї */}
+             {eggHealth < 50 && <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cracked-glass.png')] opacity-30"></div>}
+          </div>
+        </div>
 
-            // Ефект "вибуху" або зміни смайлика на певному етапі
-            if (count === 50) {
-                eggElement.innerText = "🐣";
-                tg.showAlert("Ого! Курча вилупилося!");
-                tg.MainButton.show(); // Показуємо кнопку збереження, коли є успіх
-            }
-            
-            // Вібрація при кліку (тільки на мобільних пристроях)
-            if (tg.HapticFeedback) {
-                tg.HapticFeedback.impactOccurred('medium');
-            }
-        });
+        {/* Шкала розбиття */}
+        <div className="mt-8 w-64">
+          <p className="text-center text-xs font-bold mb-1 uppercase text-gray-400">Міцність шкаралупи</p>
+          <div className="w-full bg-gray-200 h-4 rounded-full border-2 border-white shadow-inner">
+            <div 
+              className="bg-orange-400 h-full transition-all duration-200" 
+              style={{ width: `${eggHealth}%` }}
+            ></div>
+          </div>
+        </div>
+      </div>
 
-        // Обробка натискання на головну кнопку
-        tg.onEvent('mainButtonClicked', function(){
-            tg.sendData(`Мій результат: ${count}`);
-        });
-    </script>
-</body>
-</html>
+      {/* Останні знайдені іграшки */}
+      <div className="mt-auto w-full max-w-sm">
+        <h3 className="font-bold mb-2">Твоя полиця:</h3>
+        <div className="flex gap-2 overflow-x-auto p-2 bg-white rounded-xl shadow-inner min-h-[50px]">
+          {collection.map((toy, index) => (
+            <span key={index} className="text-3xl bg-gray-100 rounded-lg p-1">{toy}</span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default KinderTapper;
